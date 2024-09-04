@@ -1,0 +1,32 @@
+{
+  "name": "nodejs-sandbox",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --watch index.js"
+  },
+  "keywords": [],
+  "author": "Ives van Hoorne",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node-fetch": "2.x"
+  },
+  "dependencies": {
+    "@discordjs/opus": "0.9.0",
+    "@discordjs/voice": "0.17.0",
+    "@fastify/formbody": "7.4.0",
+    "@fastify/static": "7.0.4",
+    "@fastify/view": "9.1.0",
+    "discord.js": "14.15.3",
+    "fastify": "4.28.1",
+    "handlebars": "4.7.8",
+    "node-fetch": "2.6.6",
+    "querystring": "0.2.1",
+    "sodium": "^3.0.2"
+  },
+  "resolutions": {
+    "strip-ansi": "6.0.1",
+    "string-width": "4.2.3"
+  }
+}
