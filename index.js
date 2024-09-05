@@ -1955,7 +1955,7 @@ async function pdfToPngDistCanvas(name, file, pgS, pgE, ctC, res) {
 //上の続き。空き状況を確認する
 async function fetching1(uri, okuruJson) {
   try {
-    console.log(okuruJson);
+    /*console.log(okuruJson);*/
     const res = await fetch(uri, {
       method: "post",
       headers: { "Content-Type": "application/json" },
