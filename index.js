@@ -1717,7 +1717,7 @@ async function pdfToPngController(channelID) {
     messageIs = 0,
     emojiIs,
     pdfIs = 0;
-  let str, pgS, pgE, mesURLG, mesURLC, channelId, messageId, channel2;
+  let str, pgS, pgE, ctC, mesURLG, mesURLC, channelId, messageId, channel2;
   let res = null;
 
   //終点を決める
@@ -1756,24 +1756,41 @@ async function pdfToPngController(channelID) {
             console.log("リンクなし");
             skip++;
           }
-          if (str.indexOf(" ページ指定") != -1) {
-            pgS = String(str).substring(
-              str.indexOf(" ページ指定") + 6,
-              str.indexOf("から")
-            );
-            pgE = String(str).substring(
-              str.indexOf("から") + 2,
-              str.indexOf("まで")
-            );
+          //デフォルトはPDF全ページかつフォント優先なし。ただし誤字などは自動補正される。
+          (pgS = "FR"), (pgE = "FR"), (ctC = "FALSE");
+          if (
+            str.indexOf(" ページ指定") != -1 ||
+            str.indexOf(" フォント優先") != -1
+          ) {
+            if (str.indexOf(" ページ指定") != -1) {
+              pgS = String(str).substring(
+                str.indexOf(" ページ指定") + 6,
+                str.indexOf("から")
+              );
+              pgE = String(str).substring(
+                str.indexOf("から") + 2,
+                str.indexOf("まで")
+              );
+            }
+            if (str.indexOf(" フォント優先") != -1) {
+              ctC = String(str).substring(
+                str.indexOf("フォント優先") + 6,
+                str.indexOf("。")
+              );
+              if (String(ctC) == "あり") {
+                ctC = "TRUE";
+              } else {
+                ctC = "FALSE";
+              }
+            }
             mesURLG = String(str).substring(
               str.indexOf("channels/") + 9,
-              str.indexOf(" ページ指定")
+              str.indexOf(" ")
             );
           } else {
-            (pgS = "FR"), (pgE = "FR"); //PDF全ページ。ただし自動指定あり。
             mesURLG = String(str).substring(str.indexOf("channels/") + 9);
           }
-          console.log("pgS?", pgS, "pgE?", pgE);
+          console.log("pgS?", pgS, "pgE?", pgE, "ctC?", ctC);
           str = String(mesURLG);
           console.log("str", str);
           mesURLC = String(str).substring(str.indexOf("/") + 1);
@@ -1803,9 +1820,9 @@ async function pdfToPngController(channelID) {
                 let req = JSON.stringify({ p1: String(process.env.VOLUME2) });
                 res = await fetching1(String(process.env.uri5), req);
               }
-              console.log("res", res);
+              console.log("res", res.type);
               if (String(res.type) === "OK") {
-                pdfIs = pdfToPngRetriever(message, pgS, pgE, res);
+                pdfIs = pdfToPngRetriever(message, pgS, pgE, ctC, res);
               } else {
                 pdfIs = "NG";
               }
@@ -1822,7 +1839,7 @@ async function pdfToPngController(channelID) {
 }
 
 //該当メッセージの添付ファイルを取得し、画像化して送信する
-async function pdfToPngRetriever(message, pgS, pgE, res) {
+async function pdfToPngRetriever(message, pgS, pgE, ctC, res) {
   let file = null,
     pngs = null,
     mes2 = "";
@@ -1856,7 +1873,7 @@ async function pdfToPngRetriever(message, pgS, pgE, res) {
           "aaa\n" + String(urls[i]),
           options
         );*/ //テスト用
-        pngs = await pdfToPngDistCanvas(names[i], urls[i], pgS, pgE, res);
+        pngs = await pdfToPngDistCanvas(names[i], urls[i], pgS, pgE, ctC, res);
         if (pngs.ans == "OK") {
           let endIs = await pdfToPngSender(message.channel.id, mes2, pngs, pgS);
           if (String(endIs) == "OK") {
@@ -1874,7 +1891,7 @@ async function pdfToPngRetriever(message, pgS, pgE, res) {
 }
 
 //上の続き。1ページごとに画像化し、ファイル名を付す
-async function pdfToPngDistCanvas(name, file, pgS, pgE, res) {
+async function pdfToPngDistCanvas(name, file, pgS, pgE, ctC, res) {
   let array = [];
   console.log("A");
 
@@ -1903,6 +1920,7 @@ async function pdfToPngDistCanvas(name, file, pgS, pgE, res) {
         pdf: String(bs64),
         pgS: String(pgS),
         pgE: String(pgE),
+        ctC: String(ctC),
       };
       let req2 = JSON.stringify(fileOn);
 
@@ -1946,7 +1964,7 @@ async function fetching1(uri, okuruJson) {
     const kekka = await res.json();
     const strings = await JSON.parse(JSON.stringify(kekka));
     const data = strings["結果"];
-    console.log("data: ", data);
+    /*console.log("data: ", data);*/
     return data;
   } catch (error) {
     console.log(error);
